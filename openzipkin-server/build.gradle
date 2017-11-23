@@ -1,0 +1,29 @@
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLEngine
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509ExtendedTrustManager
+
+moduleEnabled(whatToTest('SLEUTH') && !getProp("BOM_VERSION").contains("Dalston"))
+
+task downloadZipkinJar {
+	doLast {
+		File zipkinDir = new File(gradle.gradleUserHomeDir, "caches/zipkin")
+		zipkinDir.mkdirs()
+		def file = new File(zipkinDir, 'zipkin.jar')
+		if (file.exists() && getProp("USE_CACHED_ZIPKIN")) {
+			logger.info("Won't download Zipkin since it was already downloaded and USE_CACHED_ZIPKIN flag was set")
+		} else {
+			def url = "https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=${getProp("zipkinServerVersion")}&c=exec"
+			logger.info("Downloading Zipkin from [{}], to [{}]", url, file.path)
+			def stream = file.newOutputStream()
+			stream << new URL(url).openStream()
+			stream.close()
+		}
+		logger.info("Using zipkin from location [{}]", file.path)
+	}
+}
+
+build.dependsOn(downloadZipkinJar)

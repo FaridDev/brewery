@@ -1,7 +1,12 @@
 moduleEnabled(whatToTest('SLEUTH'))
 
 dependencies {
-	compile "org.springframework.cloud:spring-cloud-starter-zipkin"
+	if (getProp("BOM_VERSION").contains("Dalston")) {
+		compile "org.springframework.cloud:spring-cloud-starter-zipkin"
+	} else {
+		compile "org.springframework.cloud:spring-cloud-starter-zipkin-legacy"
+	}
+	// TODO: update to Zipkin2, otherwise it won't work for Finchley
 	compile "org.springframework.boot:spring-boot-starter-web"
 }
 

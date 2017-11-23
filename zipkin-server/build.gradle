@@ -1,5 +1,9 @@
 moduleEnabled(whatToTest('SLEUTH_STREAM'))
 
+configurations {
+    zipkin
+}
+
 dependencies {
     compile "org.springframework:spring-jdbc"
     runtime 'org.hsqldb:hsqldb'
@@ -12,6 +16,19 @@ dependencies {
     } else {
         runtime "io.zipkin.java:zipkin-autoconfigure-ui:latest.release"
     }
+    zipkin 'io.zipkin.java:zipkin-server:2.3.1:exec@jar'
 }
 
 createDockerTaskWithPort(9411)
+
+task copyZipkinJar {
+    doLast {
+        File zipkinServerJar = configurations.zipkin.files.find { it.name.contains("zipkin-server") }
+        copy {
+            from zipkinServerJar.path
+            into project.buildDir.path
+        }
+    }
+}
+
+build.dependsOn(copyZipkinJar)
